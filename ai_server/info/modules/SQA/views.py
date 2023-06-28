@@ -29,7 +29,7 @@ def llm_chat_sqa():
         query = query_dict.get('query', '')
         history = query_dict.get('history', [])
         file_hashs = query_dict.get('file_hashs', [])
-        generate_configs = query_dict.get('generate_configs', {})
+        generation_configs = query_dict.get('generation_configs', {})
 
         if len(file_hashs) == 0:
             prompt = query.strip()
@@ -48,7 +48,7 @@ def llm_chat_sqa():
 
         try:
             resp_list = llm.letschat(prompt_list, history_list, current_app.config['MAX_PROMPT_LENGTH'],
-                                     **generate_configs)
+                                     **generation_configs)
             resp_list = response_filter(resp_list)
         except Exception as e:
             current_app.logger.error({'EXCEPTION': e})
@@ -97,7 +97,7 @@ def llm_chat_sqa_stream():
         query = query_dict.get('query', '')
         history = query_dict.get('history', [])
         file_hashs = query_dict.get('file_hashs', [])
-        generate_configs = query_dict.get('generate_configs', {})
+        generation_configs = query_dict.get('generation_configs', {})
 
         if len(file_hashs) == 0:
             prompt = query.strip()
@@ -142,5 +142,5 @@ def llm_chat_sqa_stream():
             yield json.dumps(responses, ensure_ascii=False)
 
     return Response(
-        generate(prompt_list, history_list, current_app.config['MAX_PROMPT_LENGTH'], **generate_configs),
+        generate(prompt_list, history_list, current_app.config['MAX_PROMPT_LENGTH'], **generation_configs),
         mimetype='text/event-stream')
