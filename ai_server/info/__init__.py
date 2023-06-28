@@ -68,8 +68,8 @@ knowledge_vector_store = KnowledgeVectorStore(vector_store_root_dir=VS_ROOT_DIR,
 
 from info.modules.SQA import sqa_blu
 app.register_blueprint(sqa_blu)
-from info.modules.Knowledge import knowledge_chat_blu
-app.register_blueprint(knowledge_chat_blu)
+from info.modules.Knowledge import knowledge_blu
+app.register_blueprint(knowledge_blu)
 # from info.modules.MindMap import mindmap_blu
 # app.register_blueprint(mindmap_blu)
 # from info.modules.Summary import summary_blu

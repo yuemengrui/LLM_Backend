@@ -149,7 +149,7 @@ class KnowledgeVectorStore:
             if os.path.exists(vector_dir):
                 true_vector_list.append(vector_dir)
 
-        return true_vector_list
+        return list(set(true_vector_list))
 
     def build_vector_store(self, filepath, file_hash):
         if os.path.exists(os.path.join(self.vector_store_root_dir, file_hash)):

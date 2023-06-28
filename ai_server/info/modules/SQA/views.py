@@ -2,7 +2,7 @@
 # @Author : YueMengRui
 import json
 from . import sqa_blu
-from config import SMART_QA_PROMPT_TEMPLATE, LLM_HISTORY_LEN, KNOWLEDGE_PROMPT_TEMPLATE
+from config import SQA_PROMPT_TEMPLATE, LLM_HISTORY_LEN
 from info import llm, knowledge_vector_store, limiter
 from flask import request, jsonify, current_app, Response
 from info.utils.response_code import RET, error_map
@@ -29,10 +29,7 @@ def llm_chat_sqa():
         query = query_dict.get('query', '')
         history = query_dict.get('history', [])
         file_hashs = query_dict.get('file_hashs', [])
-        # max_length = query_dict.get('max_length', 2048)
-        # top_p = query_dict.get('top_p', 0.7)
-        # temperature = query_dict.get('temperature', 0.95)
-        # return_relation = query_dict.get('return_relation', 1)
+        generate_configs = query_dict.get('generate_configs', {})
 
         if len(file_hashs) == 0:
             prompt = query.strip()
@@ -43,20 +40,19 @@ def llm_chat_sqa():
                                                                                           max_prompt_len=
                                                                                           current_app.config[
                                                                                               'MAX_PROMPT_LENGTH'],
-                                                                                          prompt_template=SMART_QA_PROMPT_TEMPLATE)
+                                                                                          prompt_template=SQA_PROMPT_TEMPLATE)
         base_query_list.append(query)
         prompt_list.append(prompt)
         history_list.append(history)
         related_docs_list.append(related_docs)
 
-        # try:
-        resp_list = llm.letschat(prompt_list, history_list, current_app.config['MAX_PROMPT_LENGTH'])
-
-        resp_list = response_filter(resp_list)
-
-    # except Exception as e:
-    #     current_app.logger.error({'EXCEPTION': e})
-    #     resp_list = [u'抱歉，我暂时无法回答您的问题'] * len(base_query_list)
+        try:
+            resp_list = llm.letschat(prompt_list, history_list, current_app.config['MAX_PROMPT_LENGTH'],
+                                     **generate_configs)
+            resp_list = response_filter(resp_list)
+        except Exception as e:
+            current_app.logger.error({'EXCEPTION': e})
+            resp_list = [u'抱歉，我暂时无法回答您的问题'] * len(base_query_list)
 
     sources = []
     for related in related_docs_list:
@@ -97,18 +93,11 @@ def llm_chat_sqa_stream():
     prompt_list = []
     history_list = []
     related_docs_list = []
-    max_length_list = []
-    top_p_list = []
-    temperature_list = []
     for query_dict in queries:
         query = query_dict.get('query', '')
         history = query_dict.get('history', [])
         file_hashs = query_dict.get('file_hashs', [])
-        max_length = query_dict.get('max_length', 2048)
-        top_p = query_dict.get('top_p', 0.8)
-        temperature = query_dict.get('temperature', 0.8)
-        score_rate = query_dict.get('score_rate', 0.1)
-        # return_relation = query_dict.get('return_relation', 1)
+        generate_configs = query_dict.get('generate_configs', {})
 
         if len(file_hashs) == 0:
             prompt = query.strip()
@@ -119,15 +108,11 @@ def llm_chat_sqa_stream():
                                                                                           max_prompt_len=
                                                                                           current_app.config[
                                                                                               'MAX_PROMPT_LENGTH'],
-                                                                                          prompt_template=KNOWLEDGE_PROMPT_TEMPLATE,
-                                                                                          score_rate=score_rate)
+                                                                                          prompt_template=SQA_PROMPT_TEMPLATE)
         base_query_list.append(query)
         prompt_list.append(prompt)
         history_list.append(history)
         related_docs_list.append(related_docs)
-        max_length_list.append(max_length)
-        top_p_list.append(top_p)
-        temperature_list.append(temperature)
 
     sources = []
     for related in related_docs_list:
@@ -143,14 +128,10 @@ def llm_chat_sqa_stream():
         sources.append(source)
 
     current_app.logger.info(str({'sources': sources}) + '\n')
-    max_length = max(max_length_list)
-    top_p = max(top_p_list)
-    temperature = max(temperature_list)
 
-    def generate(prompt_list, history_list, max_prompt_length, max_length, top_p, temperature):
+    def generate(prompt_list, history_list, max_prompt_length, **kwargs):
         for resp_list, history_list in llm.lets_stream_chat(prompt_list, history_list, max_prompt_length,
-                                                            max_length=max_length, top_p=top_p,
-                                                            temperature=temperature):
+                                                            **kwargs):
             responses = []
             for i in range(len(resp_list)):
                 history_list[i][-1][0] = base_query_list[i]
@@ -161,5 +142,5 @@ def llm_chat_sqa_stream():
             yield json.dumps(responses, ensure_ascii=False)
 
     return Response(
-        generate(prompt_list, history_list, current_app.config['MAX_PROMPT_LENGTH'], max_length, top_p, temperature),
+        generate(prompt_list, history_list, current_app.config['MAX_PROMPT_LENGTH'], **generate_configs),
         mimetype='text/event-stream')
