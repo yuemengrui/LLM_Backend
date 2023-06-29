@@ -93,7 +93,7 @@ class KnowledgeVectorStore:
                  vector_search_top_k=10,
                  chunk_size=256,  # 匹配单段内容的连接上下文长度
                  score_threshold=150,  # 过滤阈值，小于150比较精准
-                 first_rate=None,
+                 score_rate=0.1,
                  chunk_conent=False,  # 是否启用上下文关联
                  init_knowledge_dir='./Init_Knowledges',
                  logger=None
@@ -108,7 +108,7 @@ class KnowledgeVectorStore:
         self.chunk_size = chunk_size
         self.chunk_conent = chunk_conent
         self.score_threshold = score_threshold
-        self.first_rate = first_rate
+        self.score_rate = score_rate
         self.prompt_template = prompt_template
         self.init_knowledge_dir = init_knowledge_dir
         self.init_knowledges = []
@@ -205,6 +205,8 @@ class KnowledgeVectorStore:
 
     def get_docs_with_score(self, docs_with_score, top_k=None, score_rate=None):
         docs_with_score.sort(key=lambda x: x.metadata['score'])
+        if score_rate is None:
+            score_rate = self.score_rate
         self.write_log({'top_k': top_k, 'score_rate': score_rate})
         self.write_log({'related_docs_with_score': docs_with_score})
         docs = []
