@@ -62,7 +62,7 @@ knowledge_vector_store = KnowledgeVectorStore(vector_store_root_dir=VS_ROOT_DIR,
                                               vector_search_top_k=VECTOR_SEARCH_TOP_K,
                                               chunk_size=CHUNK_SIZE,
                                               score_threshold=SCORE_THRESHOLD,
-                                              first_rate=FIRST_RATE,
+                                              score_rate=SCORE_RATE,
                                               logger=app.logger)
 
 
