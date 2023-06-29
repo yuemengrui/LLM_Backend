@@ -29,18 +29,21 @@ def llm_chat_sqa():
         query = query_dict.get('query', '')
         history = query_dict.get('history', [])
         file_hashs = query_dict.get('file_hashs', [])
+        prompt_template = query_dict.get('prompt_template', None)
         generation_configs = query_dict.get('generation_configs', {})
 
         if len(file_hashs) == 0:
             prompt = query.strip()
             related_docs = []
         else:
+            if not prompt_template or not ('{context}' in prompt_template and '{query}' in prompt_template):
+                prompt_template = SQA_PROMPT_TEMPLATE
             prompt, related_docs = knowledge_vector_store.generate_knowledge_based_prompt(query.strip(),
                                                                                           file_hashs,
                                                                                           max_prompt_len=
                                                                                           current_app.config[
                                                                                               'MAX_PROMPT_LENGTH'],
-                                                                                          prompt_template=SQA_PROMPT_TEMPLATE)
+                                                                                          prompt_template=prompt_template)
         base_query_list.append(query)
         prompt_list.append(prompt)
         history_list.append(history)
@@ -97,18 +100,21 @@ def llm_chat_sqa_stream():
         query = query_dict.get('query', '')
         history = query_dict.get('history', [])
         file_hashs = query_dict.get('file_hashs', [])
+        prompt_template = query_dict.get('prompt_template', None)
         generation_configs = query_dict.get('generation_configs', {})
 
         if len(file_hashs) == 0:
             prompt = query.strip()
             related_docs = []
         else:
+            if not prompt_template or not ('{context}' in prompt_template and '{query}' in prompt_template):
+                prompt_template = SQA_PROMPT_TEMPLATE
             prompt, related_docs = knowledge_vector_store.generate_knowledge_based_prompt(query.strip(),
                                                                                           file_hashs,
                                                                                           max_prompt_len=
                                                                                           current_app.config[
                                                                                               'MAX_PROMPT_LENGTH'],
-                                                                                          prompt_template=SQA_PROMPT_TEMPLATE)
+                                                                                          prompt_template=prompt_template)
         base_query_list.append(query)
         prompt_list.append(prompt)
         history_list.append(history)
