@@ -2,7 +2,6 @@
 # @Author : YueMengRui
 import json
 from info import llm
-from flask import current_app
 
 
 def llm_stream_generate(prompt_list, history_list, max_prompt_length, base_query_list, sources=None, **kwargs):
@@ -15,9 +14,9 @@ def llm_stream_generate(prompt_list, history_list, max_prompt_length, base_query
 
             if sources[i] is not None:
                 responses.append(
-                    {'answer': resp_list[i], 'history': history_list[i][-current_app.config['LLM_HISTORY_LEN']:],
+                    {'answer': resp_list[i], 'history': history_list[i][-10:],
                      'source': sources[i]})
             else:
                 responses.append(
-                    {'answer': resp_list[i], 'history': history_list[i][-current_app.config['LLM_HISTORY_LEN']:]})
+                    {'answer': resp_list[i], 'history': history_list[i][-10:]})
         yield json.dumps(responses, ensure_ascii=False)
