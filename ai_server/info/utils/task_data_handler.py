@@ -30,7 +30,7 @@ class TaskDataHandler:
 
             task_func, base_prompt_template = self.task_mapping[task_type]
 
-            res = task_func(query_dict)
+            res = task_func(query_dict, base_prompt_template)
 
             origin_query_list.append(res[0])
             prompt_list.append(res[1])
