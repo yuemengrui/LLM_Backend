@@ -1,6 +1,8 @@
 # *_*coding:utf-8 *_*
-from config import *
-from flask import Flask, request
+import os
+import logging
+from config import config_dict
+from flask import Flask
 from flask_cors import CORS
 from flask_limiter import Limiter
 from logging.handlers import TimedRotatingFileHandler
@@ -35,6 +37,8 @@ config_cls = config_dict['dev']
 app.config.from_object(config_cls)
 if not os.path.exists(app.config['TEMP_FILE_DIR']):
     os.makedirs(app.config['TEMP_FILE_DIR'])
+if not os.path.exists(app.config['VS_ROOT_DIR']):
+    os.makedirs(app.config['VS_ROOT_DIR'])
 
 app.json.ensure_ascii = False
 
@@ -50,19 +54,18 @@ limiter.init_app(app)
 
 from info.libs.ai import build_model, KnowledgeVectorStore
 
-llm = build_model(model_type=LLM_MODEL_TYPE,
-                  model_name_or_path=LLM_MODEL_NAME_OR_PATH,
-                  history_len=LLM_HISTORY_LEN,
+llm = build_model(model_type=app.config['LLM_MODEL_TYPE'],
+                  model_name_or_path=app.config['LLM_MODEL_NAME_OR_PATH'],
+                  history_len=app.config['LLM_HISTORY_LEN'],
                   logger=app.logger)
 
-knowledge_vector_store = KnowledgeVectorStore(vector_store_root_dir=VS_ROOT_DIR,
-                                              embedding_model_name_or_path=EMBEDDING_MODEL_NAME_OR_PATH,
-                                              prompt_template=KNOWLEDGE_PROMPT_TEMPLATE,
-                                              embedding_device=EMBEDDING_DEVICE,
-                                              vector_search_top_k=VECTOR_SEARCH_TOP_K,
-                                              chunk_size=CHUNK_SIZE,
-                                              score_threshold=SCORE_THRESHOLD,
-                                              score_rate=SCORE_RATE,
+knowledge_vector_store = KnowledgeVectorStore(vector_store_root_dir=app.config['VS_ROOT_DIR'],
+                                              embedding_model_name_or_path=app.config['EMBEDDING_MODEL_NAME_OR_PATH'],
+                                              embedding_device=app.config['EMBEDDING_DEVICE'],
+                                              vector_search_top_k=app.config['VECTOR_SEARCH_TOP_K'],
+                                              chunk_size=app.config['CHUNK_SIZE'],
+                                              score_threshold=app.config['SCORE_THRESHOLD'],
+                                              score_rate=app.config['SCORE_RATE'],
                                               logger=app.logger)
 
 
@@ -70,11 +73,3 @@ from info.modules.SQA import sqa_blu
 app.register_blueprint(sqa_blu)
 from info.modules.Knowledge import knowledge_blu
 app.register_blueprint(knowledge_blu)
-# from info.modules.MindMap import mindmap_blu
-# app.register_blueprint(mindmap_blu)
-# from info.modules.Summary import summary_blu
-# app.register_blueprint(summary_blu)
-# from info.modules.Translation import translation_blu
-# app.register_blueprint(translation_blu)
-# from info.modules.Write import write_blu
-# app.register_blueprint(write_blu)

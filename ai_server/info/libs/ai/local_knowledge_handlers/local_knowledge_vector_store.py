@@ -1,7 +1,6 @@
 # *_*coding:utf-8 *_*
 # @Author : YueMengRui
 import os
-import datetime
 import numpy as np
 from info.utils.MD5_Utils import md5hex
 from typing import List, Tuple
@@ -88,7 +87,6 @@ class KnowledgeVectorStore:
     def __init__(self,
                  vector_store_root_dir,
                  embedding_model_name_or_path,
-                 prompt_template,
                  embedding_device='cuda',
                  vector_search_top_k=10,
                  chunk_size=256,  # 匹配单段内容的连接上下文长度
@@ -109,7 +107,6 @@ class KnowledgeVectorStore:
         self.chunk_conent = chunk_conent
         self.score_threshold = score_threshold
         self.score_rate = score_rate
-        self.prompt_template = prompt_template
         self.init_knowledge_dir = init_knowledge_dir
         self.init_knowledges = []
         self.init_knowledge()
@@ -260,9 +257,6 @@ class KnowledgeVectorStore:
                         prompt_template=None) -> str:
         if not related_docs:
             return query, []
-
-        if not prompt_template:
-            prompt_template = self.prompt_template
 
         self.write_log({'related_docs': related_docs})
         base_prompt_len = len(prompt_template.format(context='', query=query))

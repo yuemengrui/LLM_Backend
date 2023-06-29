@@ -23,3 +23,11 @@ def remove_temp(file_path):
         os.remove(file_path)
     except Exception as e:
         current_app.logger.error(str({'EXCEPTION': e}) + '\n')
+
+
+def have_chinese(context):
+    for s in context:
+        if '\u4e00' <= s <= '\u9fa5':
+            return True
+
+    return False

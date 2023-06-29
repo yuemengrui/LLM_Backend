@@ -5,11 +5,11 @@ import json
 import requests
 import datetime
 from . import knowledge_blu
-from info import llm, knowledge_vector_store, limiter
+from info import knowledge_vector_store, limiter
 from flask import request, jsonify, current_app
 from info.utils.response_code import RET, error_map
 from info.utils.MD5_Utils import check_md5
-from info.utils.common import response_filter, get_base_temp_files_dir, remove_temp
+from info.utils.common import get_base_temp_files_dir, remove_temp
 
 
 @knowledge_blu.route('/ai/llm/knowledge/file/add', methods=['POST'])
