@@ -1,6 +1,7 @@
 # *_*coding:utf-8 *_*
 # @Author : YueMengRui
 import torch
+from copy import deepcopy
 from .base_model import BaseModel
 from typing import Dict, Optional
 from transformers import AutoTokenizer, AutoModel
@@ -120,7 +121,6 @@ class ChatGLM(BaseModel):
             query = query_list[i]
             history = history_list[i]
 
-            prompt = query
             if history and len(query) < max_prompt_length:
                 sum_len = len("[Round 1]\n\n问：{}\n\n答：".format(query))
                 true_history = []
@@ -131,12 +131,12 @@ class ChatGLM(BaseModel):
                     else:
                         true_history.insert(0, (old_query, old_response))
                         sum_len += history_prompt_len
+                history = deepcopy(true_history)
 
-                if true_history:
-                    prompt = ''
-                    for j, (old_query, old_response) in enumerate(true_history):
-                        prompt += "[Round {}]\n\n问：{}\n\n答：{}\n\n".format(j + 1, old_query, old_response)
-                    prompt += "[Round {}]\n\n问：{}\n\n答：".format(len(true_history) + 1, query)
+            prompt = ""
+            for j, (old_query, old_response) in enumerate(history):
+                prompt += "[Round {}]\n\n问：{}\n\n答：{}\n\n".format(j + 1, old_query, old_response)
+            prompt += "[Round {}]\n\n问：{}\n\n答：".format(len(history) + 1, query)
 
             if self.logger:
                 self.logger.info(str({'prompt_len': len(prompt), 'prompt': prompt}) + '\n')
@@ -161,25 +161,24 @@ class ChatGLM(BaseModel):
         batch_prompt = []
         for i in range(len(query_list)):
             query = query_list[i]
-            # history = history_list[i]
+            history = history_list[i]
 
-            prompt = query
-            # if history and len(query) < max_prompt_length:
-            #     sum_len = len("[Round 1]\n\n问：{}\n\n答：".format(query))
-            #     true_history = []
-            #     for (old_query, old_response) in history[::-1]:
-            #         history_prompt_len = len("[Round 1]\n\n问：{}\n\n答：{}\n\n".format(old_query, old_response))
-            #         if sum_len + history_prompt_len > max_prompt_length:
-            #             break
-            #         else:
-            #             true_history.insert(0, (old_query, old_response))
-            #             sum_len += history_prompt_len
-            #
-            #     if true_history:
-            #         prompt = ""
-            #         for j, (old_query, old_response) in enumerate(true_history):
-            #             prompt += "[Round {}]\n\n问：{}\n\n答：{}\n\n".format(j + 1, old_query, old_response)
-            #         prompt += "[Round {}]\n\n问：{}\n\n答：".format(len(true_history) + 1, query)
+            if history and len(query) < max_prompt_length:
+                sum_len = len("[Round 1]\n\n问：{}\n\n答：".format(query))
+                true_history = []
+                for (old_query, old_response) in history[::-1]:
+                    history_prompt_len = len("[Round 1]\n\n问：{}\n\n答：{}\n\n".format(old_query, old_response))
+                    if sum_len + history_prompt_len > max_prompt_length:
+                        break
+                    else:
+                        true_history.insert(0, (old_query, old_response))
+                        sum_len += history_prompt_len
+                history = deepcopy(true_history)
+
+            prompt = ""
+            for j, (old_query, old_response) in enumerate(history):
+                prompt += "[Round {}]\n\n问：{}\n\n答：{}\n\n".format(j + 1, old_query, old_response)
+            prompt += "[Round {}]\n\n问：{}\n\n答：".format(len(history) + 1, query)
 
             if self.logger:
                 self.logger.info(str({'prompt_len': len(prompt), 'prompt': prompt}) + '\n')
