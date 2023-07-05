@@ -61,9 +61,9 @@ class TaskDataHandler:
         for doc in related_docs:
             file_hash = doc.metadata['file_hash']
             if file_hash in temp.keys():
-                temp[file_hash]['related_content'].append(doc.page_content)
+                temp[file_hash]['related_content'].append({'context': doc.page_content, 'score': doc.metadata['score']})
             else:
-                temp[file_hash] = {'file_hash': file_hash, 'related_content': [doc.page_content]}
+                temp[file_hash] = {'file_hash': file_hash, 'related_content': [{'context': doc.page_content, 'score': doc.metadata['score']}]}
 
         source = [v for v in temp.values()]
 
@@ -91,9 +91,9 @@ class TaskDataHandler:
         for doc in related_docs:
             file_hash = doc.metadata['file_hash']
             if file_hash in temp.keys():
-                temp[file_hash]['related_content'].append(doc.page_content)
+                temp[file_hash]['related_content'].append({'context': doc.page_content, 'score': doc.metadata['score']})
             else:
-                temp[file_hash] = {'file_hash': file_hash, 'related_content': [doc.page_content]}
+                temp[file_hash] = {'file_hash': file_hash, 'related_content': [{'context': doc.page_content, 'score': doc.metadata['score']}]}
 
         source = [v for v in temp.values()]
 
