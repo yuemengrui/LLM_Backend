@@ -25,6 +25,9 @@ class TaskDataHandler:
             task_type = query_dict.get('task_type', 'sqa')
             generation_configs = query_dict.get('generation_configs', {})
 
+            if not isinstance(generation_configs, dict):
+                generation_configs = {}
+
             if task_type not in self.task_mapping:
                 task_type = 'sqa'
 
@@ -44,6 +47,9 @@ class TaskDataHandler:
         history = data.get('history', [])
         file_hashs = data.get('file_hashs', [])
         prompt_template = data.get('prompt_template', None)
+        custom_configs = data.get('custom_configs', {})
+        if not isinstance(custom_configs, dict):
+            custom_configs = {}
         if len(file_hashs) == 0:
             prompt = query.strip()
             related_docs = []
@@ -55,7 +61,8 @@ class TaskDataHandler:
                                                                                           max_prompt_len=
                                                                                           current_app.config[
                                                                                               'MAX_PROMPT_LENGTH'],
-                                                                                          prompt_template=prompt_template)
+                                                                                          prompt_template=prompt_template,
+                                                                                          **custom_configs)
 
         temp = {}
         for doc in related_docs:
@@ -63,7 +70,8 @@ class TaskDataHandler:
             if file_hash in temp.keys():
                 temp[file_hash]['related_content'].append({'context': doc.page_content, 'score': doc.metadata['score']})
             else:
-                temp[file_hash] = {'file_hash': file_hash, 'related_content': [{'context': doc.page_content, 'score': doc.metadata['score']}]}
+                temp[file_hash] = {'file_hash': file_hash,
+                                   'related_content': [{'context': doc.page_content, 'score': doc.metadata['score']}]}
 
         source = [v for v in temp.values()]
 
@@ -74,6 +82,9 @@ class TaskDataHandler:
         history = data.get('history', [])
         file_hashs = data.get('file_hashs', [])
         prompt_template = data.get('prompt_template', None)
+        custom_configs = data.get('custom_configs', {})
+        if not isinstance(custom_configs, dict):
+            custom_configs = {}
         if len(file_hashs) == 0:
             prompt = query.strip()
             related_docs = []
@@ -85,7 +96,8 @@ class TaskDataHandler:
                                                                                           max_prompt_len=
                                                                                           current_app.config[
                                                                                               'MAX_PROMPT_LENGTH'],
-                                                                                          prompt_template=prompt_template)
+                                                                                          prompt_template=prompt_template,
+                                                                                          **custom_configs)
 
         temp = {}
         for doc in related_docs:
@@ -93,7 +105,8 @@ class TaskDataHandler:
             if file_hash in temp.keys():
                 temp[file_hash]['related_content'].append({'context': doc.page_content, 'score': doc.metadata['score']})
             else:
-                temp[file_hash] = {'file_hash': file_hash, 'related_content': [{'context': doc.page_content, 'score': doc.metadata['score']}]}
+                temp[file_hash] = {'file_hash': file_hash,
+                                   'related_content': [{'context': doc.page_content, 'score': doc.metadata['score']}]}
 
         source = [v for v in temp.values()]
 

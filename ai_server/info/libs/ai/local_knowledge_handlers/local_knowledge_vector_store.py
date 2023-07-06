@@ -200,16 +200,20 @@ class KnowledgeVectorStore:
             self.write_log({'file load error': '文件均未能成功加载'})
             return False
 
-    def get_docs_with_score(self, docs_with_score, top_k=None, score_rate=None):
+    def get_docs_with_score(self, docs_with_score, top_k=None, score_rate=None, knowledge_score_threshold=150, **kwargs):
         docs_with_score.sort(key=lambda x: x.metadata['score'])
         if score_rate is None:
             score_rate = self.score_rate
-        self.write_log({'top_k': top_k, 'score_rate': score_rate})
         self.write_log({'related_docs_with_score': docs_with_score})
         docs = []
         others_list = []
+
+        if not isinstance(knowledge_score_threshold, int):
+            knowledge_score_threshold = 150
+
+        self.write_log({'top_k': top_k, 'score_rate': score_rate, 'knowledge_score_threshold': knowledge_score_threshold})
         for doc in docs_with_score:
-            if doc.metadata['score'] < self.score_threshold:
+            if doc.metadata['score'] < knowledge_score_threshold:
                 docs.append(doc)
             else:
                 others_list.append(doc)
@@ -230,7 +234,7 @@ class KnowledgeVectorStore:
 
         return docs
 
-    def get_related_docs(self, query, vector_store_dir_list, score_rate=None):
+    def get_related_docs(self, query, vector_store_dir_list, score_rate=None, **kwargs):
         if self.init_knowledges:
             vector_store_dir_list.extend(self.init_knowledges)
 
@@ -247,7 +251,7 @@ class KnowledgeVectorStore:
 
         related_docs_with_score = vector_store.similarity_search_with_score(query, k=self.vector_search_top_k)
 
-        related_docs = self.get_docs_with_score(related_docs_with_score, top_k=None, score_rate=score_rate)
+        related_docs = self.get_docs_with_score(related_docs_with_score, top_k=None, score_rate=score_rate, **kwargs)
 
         return related_docs
 
@@ -279,9 +283,9 @@ class KnowledgeVectorStore:
         return prompt, true_related_docs
 
     def generate_knowledge_based_prompt(self, query, vector_store_dir_list, max_prompt_len=3000, prompt_template=None,
-                                        score_rate=None):
+                                        score_rate=None, **kwargs):
         vector_store_dir_list = self.check_vector_store(vector_store_dir_list)
-        related_docs = self.get_related_docs(query, vector_store_dir_list, score_rate=score_rate)
+        related_docs = self.get_related_docs(query, vector_store_dir_list, score_rate=score_rate, **kwargs)
 
         knowledge_based_prompt, docs = self.generate_prompt(related_docs, query, max_prompt_len, prompt_template)
 
