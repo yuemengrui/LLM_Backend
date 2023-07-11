@@ -88,11 +88,6 @@ class KnowledgeVectorStore:
                  vector_store_root_dir,
                  embedding_model_name_or_path,
                  embedding_device='cuda',
-                 vector_search_top_k=10,
-                 chunk_size=256,  # 匹配单段内容的连接上下文长度
-                 score_threshold=150,  # 过滤阈值，小于150比较精准
-                 score_rate=0.1,
-                 chunk_conent=False,  # 是否启用上下文关联
                  init_knowledge_dir='./Init_Knowledges',
                  logger=None
                  ):
@@ -102,11 +97,6 @@ class KnowledgeVectorStore:
                                                 model_kwargs={'device': embedding_device})
 
         self.logger = logger
-        self.vector_search_top_k = vector_search_top_k
-        self.chunk_size = chunk_size
-        self.chunk_conent = chunk_conent
-        self.score_threshold = score_threshold
-        self.score_rate = score_rate
         self.init_knowledge_dir = init_knowledge_dir
         self.init_knowledges = []
         self.init_knowledge()
@@ -200,43 +190,43 @@ class KnowledgeVectorStore:
             self.write_log({'file load error': '文件均未能成功加载'})
             return False
 
-    def get_docs_with_score(self, docs_with_score, top_k=None, score_rate=None, knowledge_score_threshold=150, **kwargs):
+    def get_docs_with_score(self, docs_with_score, knowledge_score_rate=0.1, knowledge_score_threshold=150, **kwargs):
         docs_with_score.sort(key=lambda x: x.metadata['score'])
-        if score_rate is None:
-            score_rate = self.score_rate
+
         self.write_log({'related_docs_with_score': docs_with_score})
         docs = []
         others_list = []
 
+        if not isinstance(knowledge_score_rate, float):
+            knowledge_score_rate = 0.1
+
         if not isinstance(knowledge_score_threshold, int):
             knowledge_score_threshold = 150
 
-        self.write_log({'top_k': top_k, 'score_rate': score_rate, 'knowledge_score_threshold': knowledge_score_threshold})
+        self.write_log(
+            {'knowledge_score_rate': knowledge_score_rate, 'knowledge_score_threshold': knowledge_score_threshold})
         for doc in docs_with_score:
             if doc.metadata['score'] < knowledge_score_threshold:
                 docs.append(doc)
             else:
                 others_list.append(doc)
 
-        if top_k:
-            if len(docs) < top_k:
-                more = top_k - len(docs)
-                docs.extend(others_list[:more])
-
-        if score_rate and docs:
+        if knowledge_score_rate and docs:
             first_score = docs[0].metadata['score']
-            up_score = first_score + first_score * score_rate
+            up_score = first_score + first_score * knowledge_score_rate
             for i in docs[::-1]:
                 if i.metadata['score'] > up_score:
                     docs.remove(i)
 
-        self.write_log({'related_docs_with_score': docs_with_score})
-
         return docs
 
-    def get_related_docs(self, query, vector_store_dir_list, score_rate=None, **kwargs):
+    def get_related_docs(self, query, vector_store_dir_list, knowledge_chunk_size=512, knowledge_chunk_connect=True,
+                         vector_search_top_k=10, **kwargs):
         if self.init_knowledges:
             vector_store_dir_list.extend(self.init_knowledges)
+
+        if len(vector_store_dir_list) == 0:
+            return []
 
         for i, vector_store_dir in enumerate(vector_store_dir_list):
             if i == 0:
@@ -244,14 +234,24 @@ class KnowledgeVectorStore:
             else:
                 vector_store.merge_from(FAISS.load_local(vector_store_dir, self.embeddings))
 
+        if not isinstance(knowledge_chunk_size, int):
+            knowledge_chunk_size = 512
+
+        if not isinstance(knowledge_chunk_connect, bool):
+            knowledge_chunk_connect = True
+
+        if not isinstance(vector_search_top_k, int):
+            vector_search_top_k = 10
+
+        self.write_log({'knowledge_chunk_size': knowledge_chunk_size, 'knowledge_chunk_connect': knowledge_chunk_connect,
+                        'vector_search_top_k': vector_search_top_k})
         FAISS.similarity_search_with_score_by_vector = similarity_search_with_score_by_vector
-        vector_store.chunk_size = self.chunk_size
-        vector_store.chunk_conent = self.chunk_conent
-        # top_k = max(min(int(len(vector_store_dir_list) / 10), self.vector_search_top_k), 1)
+        vector_store.chunk_size = knowledge_chunk_size
+        vector_store.chunk_conent = knowledge_chunk_connect
 
-        related_docs_with_score = vector_store.similarity_search_with_score(query, k=self.vector_search_top_k)
+        related_docs_with_score = vector_store.similarity_search_with_score(query, k=vector_search_top_k)
 
-        related_docs = self.get_docs_with_score(related_docs_with_score, top_k=None, score_rate=score_rate, **kwargs)
+        related_docs = self.get_docs_with_score(related_docs_with_score, **kwargs)
 
         return related_docs
 
@@ -283,9 +283,9 @@ class KnowledgeVectorStore:
         return prompt, true_related_docs
 
     def generate_knowledge_based_prompt(self, query, vector_store_dir_list, max_prompt_len=3000, prompt_template=None,
-                                        score_rate=None, **kwargs):
+                                        **kwargs):
         vector_store_dir_list = self.check_vector_store(vector_store_dir_list)
-        related_docs = self.get_related_docs(query, vector_store_dir_list, score_rate=score_rate, **kwargs)
+        related_docs = self.get_related_docs(query, vector_store_dir_list, **kwargs)
 
         knowledge_based_prompt, docs = self.generate_prompt(related_docs, query, max_prompt_len, prompt_template)
 

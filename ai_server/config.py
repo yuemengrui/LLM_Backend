@@ -32,13 +32,6 @@ class DevelopmentConfig(Config):
 
     VS_ROOT_DIR = "./vector_store"
 
-    # return top-k text chunk from vector store
-    VECTOR_SEARCH_TOP_K = 10
-    SCORE_RATE = 0.1
-
-    CHUNK_SIZE = 512
-    SCORE_THRESHOLD = 150
-
     MAX_PROMPT_LENGTH = 3000
 
 

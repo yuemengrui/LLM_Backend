@@ -62,10 +62,6 @@ llm = build_model(model_type=app.config['LLM_MODEL_TYPE'],
 knowledge_vector_store = KnowledgeVectorStore(vector_store_root_dir=app.config['VS_ROOT_DIR'],
                                               embedding_model_name_or_path=app.config['EMBEDDING_MODEL_NAME_OR_PATH'],
                                               embedding_device=app.config['EMBEDDING_DEVICE'],
-                                              vector_search_top_k=app.config['VECTOR_SEARCH_TOP_K'],
-                                              chunk_size=app.config['CHUNK_SIZE'],
-                                              score_threshold=app.config['SCORE_THRESHOLD'],
-                                              score_rate=app.config['SCORE_RATE'],
                                               logger=app.logger)
 
 
