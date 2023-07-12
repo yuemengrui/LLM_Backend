@@ -190,7 +190,7 @@ class KnowledgeVectorStore:
             self.write_log({'file load error': '文件均未能成功加载'})
             return False
 
-    def get_docs_with_score(self, docs_with_score, knowledge_score_rate=0.1, knowledge_score_threshold=150, **kwargs):
+    def get_docs_with_score(self, docs_with_score, knowledge_score_rate=0.1, knowledge_score_threshold=200, **kwargs):
         docs_with_score.sort(key=lambda x: x.metadata['score'])
 
         self.write_log({'related_docs_with_score': docs_with_score})
