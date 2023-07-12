@@ -201,7 +201,7 @@ class KnowledgeVectorStore:
             knowledge_score_rate = 0.1
 
         if not isinstance(knowledge_score_threshold, int):
-            knowledge_score_threshold = 150
+            knowledge_score_threshold = 200
 
         self.write_log(
             {'knowledge_score_rate': knowledge_score_rate, 'knowledge_score_threshold': knowledge_score_threshold})
