@@ -19,8 +19,9 @@ def llm_knowledge_file_add():
     json_data = json.loads(data.decode("utf-8"))
     file_url = json_data.get('file_url')
     file_hash = json_data.get('file_hash')
+    file_type = json_data.get('file_type')
 
-    current_app.logger.info(str({'file_hash': file_hash, 'file_url': file_url}) + '\n')
+    current_app.logger.info(str({'file_type': file_type, 'file_hash': file_hash, 'file_url': file_url}) + '\n')
 
     if not all([file_hash, file_url]):
         return jsonify(errcode=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
@@ -28,8 +29,11 @@ def llm_knowledge_file_add():
     if knowledge_vector_store.check_vector_exist(file_hash):
         return jsonify(errcode=RET.OK, errmsg=error_map[RET.OK])
 
-    try:
+    if file_type:
+        file_ext = '.' + file_type
+    else:
         file_ext = '.' + file_url.split('.')[-1]
+    try:
         nowtime = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         file_path = os.path.join(get_base_temp_files_dir(), str(nowtime) + file_hash + file_ext)
         file_data = requests.get(file_url).content
