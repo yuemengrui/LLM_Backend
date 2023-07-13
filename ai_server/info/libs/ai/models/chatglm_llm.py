@@ -161,20 +161,19 @@ class ChatGLM(BaseModel):
         batch_prompt = []
         for i in range(len(query_list)):
             query = query_list[i]
-            history = []
-            # history = history_list[i]
-            #
-            # if history and len(query) < max_prompt_length:
-            #     sum_len = len("[Round 1]\n\n问：{}\n\n答：".format(query))
-            #     true_history = []
-            #     for (old_query, old_response) in history[::-1]:
-            #         history_prompt_len = len("[Round 1]\n\n问：{}\n\n答：{}\n\n".format(old_query, old_response))
-            #         if sum_len + history_prompt_len > max_prompt_length:
-            #             break
-            #         else:
-            #             true_history.insert(0, (old_query, old_response))
-            #             sum_len += history_prompt_len
-            #     history = deepcopy(true_history)
+            history = history_list[i]
+
+            if history and len(query) < max_prompt_length:
+                sum_len = len("[Round 1]\n\n问：{}\n\n答：".format(query))
+                true_history = []
+                for (old_query, old_response) in history[::-1]:
+                    history_prompt_len = len("[Round 1]\n\n问：{}\n\n答：{}\n\n".format(old_query, old_response))
+                    if sum_len + history_prompt_len > max_prompt_length:
+                        break
+                    else:
+                        true_history.insert(0, (old_query, old_response))
+                        sum_len += history_prompt_len
+                history = deepcopy(true_history)
 
             prompt = ""
             for j, (old_query, old_response) in enumerate(history):

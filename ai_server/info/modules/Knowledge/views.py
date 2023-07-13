@@ -20,6 +20,8 @@ def llm_knowledge_file_add():
     file_url = json_data.get('file_url')
     file_hash = json_data.get('file_hash')
 
+    current_app.logger.info(str({'file_hash': file_hash, 'file_url': file_url}) + '\n')
+
     if not all([file_hash, file_url]):
         return jsonify(errcode=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
 
@@ -27,16 +29,12 @@ def llm_knowledge_file_add():
         return jsonify(errcode=RET.OK, errmsg=error_map[RET.OK])
 
     try:
-        if '134.175.246' in file_url:
-            file_search_path = file_url.split('ai/file')[-1][1:]
-            file_path = os.path.join(current_app.config['TEMP_FILE_DIR'], file_search_path)
-        else:
-            file_ext = '.' + file_url.split('.')[-1]
-            nowtime = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-            file_path = os.path.join(get_base_temp_files_dir(), str(nowtime) + file_hash + file_ext)
-            file_data = requests.get(file_url).content
-            with open(file_path, 'wb') as f:
-                f.write(file_data)
+        file_ext = '.' + file_url.split('.')[-1]
+        nowtime = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        file_path = os.path.join(get_base_temp_files_dir(), str(nowtime) + file_hash + file_ext)
+        file_data = requests.get(file_url).content
+        with open(file_path, 'wb') as f:
+            f.write(file_data)
     except Exception as e:
         current_app.logger.error(e)
         return jsonify(errcode=RET.DATAERR, errmsg=error_map[RET.DATAERR])
