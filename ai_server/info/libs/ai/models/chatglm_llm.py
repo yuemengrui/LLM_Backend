@@ -155,7 +155,7 @@ class ChatGLM(BaseModel):
 
         return response_list
 
-    def lets_stream_chat(self, query_list, history_list, max_prompt_length, max_length=2048, top_p=0.8,
+    def lets_stream_chat(self, query_list, history_list, max_prompt_length, max_length=4096, top_p=0.8,
                          temperature=0.8, **kwargs):
 
         batch_prompt = []
