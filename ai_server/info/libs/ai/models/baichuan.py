@@ -60,7 +60,7 @@ class BaiChuan(BaseModel):
             else:
                 self.logger.warning(f"message role not supported yet: {message['role']}\n")
         total_input = total_input[-max_input_tokens:]  # truncate left
-        self.logger.info(str({'prompt': self.tokenizer.decode(total_input)}) + '\n')
+        self.logger.info(str({'prompt_len': len(total_input), 'prompt': self.tokenizer.decode(total_input)}) + '\n')
         total_input.append(self.model.generation_config.assistant_token_id)
         return total_input
 
