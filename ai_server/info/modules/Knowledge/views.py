@@ -33,6 +33,8 @@ def llm_knowledge_file_add():
         file_ext = '.' + file_type
     else:
         file_ext = '.' + file_url.split('.')[-1]
+
+    current_app.logger.info(str({'file_ext': file_ext}) + '\n')
     try:
         nowtime = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         file_path = os.path.join(get_base_temp_files_dir(), str(nowtime) + file_hash + file_ext)

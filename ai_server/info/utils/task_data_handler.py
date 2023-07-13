@@ -50,19 +50,17 @@ class TaskDataHandler:
         custom_configs = data.get('custom_configs', {})
         if not isinstance(custom_configs, dict):
             custom_configs = {}
-        if len(file_hashs) == 0:
-            prompt = query.strip()
-            related_docs = []
-        else:
-            if not prompt_template or not ('{context}' in prompt_template and '{query}' in prompt_template):
-                prompt_template = base_prompt_template
-            prompt, related_docs = knowledge_vector_store.generate_knowledge_based_prompt(query.strip(),
-                                                                                          file_hashs,
-                                                                                          max_prompt_len=
-                                                                                          current_app.config[
-                                                                                              'MAX_PROMPT_LENGTH'],
-                                                                                          prompt_template=prompt_template,
-                                                                                          **custom_configs)
+
+        if not prompt_template or not ('{context}' in prompt_template and '{query}' in prompt_template):
+            prompt_template = base_prompt_template
+
+        prompt, related_docs = knowledge_vector_store.generate_knowledge_based_prompt(query.strip(),
+                                                                                      file_hashs,
+                                                                                      max_prompt_len=
+                                                                                      current_app.config[
+                                                                                          'MAX_PROMPT_LENGTH'],
+                                                                                      prompt_template=prompt_template,
+                                                                                      **custom_configs)
 
         temp = {}
         for doc in related_docs:
@@ -85,19 +83,17 @@ class TaskDataHandler:
         custom_configs = data.get('custom_configs', {})
         if not isinstance(custom_configs, dict):
             custom_configs = {}
-        if len(file_hashs) == 0:
-            prompt = query.strip()
-            related_docs = []
-        else:
-            if not prompt_template or not ('{context}' in prompt_template and '{query}' in prompt_template):
-                prompt_template = base_prompt_template
-            prompt, related_docs = knowledge_vector_store.generate_knowledge_based_prompt(query.strip(),
-                                                                                          file_hashs,
-                                                                                          max_prompt_len=
-                                                                                          current_app.config[
-                                                                                              'MAX_PROMPT_LENGTH'],
-                                                                                          prompt_template=prompt_template,
-                                                                                          **custom_configs)
+
+        if not prompt_template or not ('{context}' in prompt_template and '{query}' in prompt_template):
+            prompt_template = base_prompt_template
+
+        prompt, related_docs = knowledge_vector_store.generate_knowledge_based_prompt(query.strip(),
+                                                                                      file_hashs,
+                                                                                      max_prompt_len=
+                                                                                      current_app.config[
+                                                                                          'MAX_PROMPT_LENGTH'],
+                                                                                      prompt_template=prompt_template,
+                                                                                      **custom_configs)
 
         temp = {}
         for doc in related_docs:
