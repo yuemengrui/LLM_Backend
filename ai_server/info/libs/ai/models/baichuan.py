@@ -15,8 +15,9 @@ class BaiChuan(BaseModel):
         self.device = None
         self.logger = logger
         self._load_model(model_name_or_path)
-        self.logger.info(str({'config': self.model.config}) + '\n')
-        self.logger.info(str({'config': self.model.generation_config}) + '\n')
+        if self.logger:
+            self.logger.info(str({'config': self.model.config}) + '\n')
+            self.logger.info(str({'config': self.model.generation_config}) + '\n')
 
     def _load_model(self, model_name_or_path):
         self.model = AutoModelForCausalLM.from_pretrained(
@@ -60,7 +61,8 @@ class BaiChuan(BaseModel):
             else:
                 self.logger.warning(f"message role not supported yet: {message['role']}\n")
         total_input = total_input[-max_input_tokens:]  # truncate left
-        self.logger.info(str({'prompt_len': len(total_input), 'prompt': self.tokenizer.decode(total_input)}) + '\n')
+        if self.logger:
+            self.logger.info(str({'prompt_len': len(total_input), 'prompt': self.tokenizer.decode(total_input)}) + '\n')
         total_input.append(self.model.generation_config.assistant_token_id)
         return total_input
 
@@ -70,7 +72,9 @@ class BaiChuan(BaseModel):
         """
         pass
 
-    def lets_stream_chat(self, query_list, history_list, max_prompt_length, **kwargs):
+    def lets_stream_chat(self, query_list, history_list, **kwargs):
+        if self.logger:
+            self.logger.info(str(kwargs) + '\n')
         batch_prompt = []
 
         for i in range(len(query_list)):

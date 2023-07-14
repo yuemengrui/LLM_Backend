@@ -114,7 +114,8 @@ class ChatGLM(BaseModel):
 
         self.model = self.model.eval()
 
-    def letschat(self, query_list, history_list, max_prompt_length, max_length=4096, top_p=0.8, temperature=0.8, **kwargs):
+    def letschat(self, query_list, history_list, max_prompt_length, max_length=4096, top_p=0.8, temperature=0.8,
+                 **kwargs):
 
         batch_prompt = []
         for i in range(len(query_list)):
@@ -140,7 +141,7 @@ class ChatGLM(BaseModel):
 
             if self.logger:
                 self.logger.info(str({'prompt_len': len(prompt), 'prompt': prompt}) + '\n')
-                self.logger.info(str({'max_length': max_length, 'top_p': top_p, 'temperature':temperature}) + '\n')
+                self.logger.info(str({'max_length': max_length, 'top_p': top_p, 'temperature': temperature}) + '\n')
             batch_prompt.append(prompt)
 
         response_list = self.model.batch_chat(
@@ -155,8 +156,12 @@ class ChatGLM(BaseModel):
 
         return response_list
 
-    def lets_stream_chat(self, query_list, history_list, max_prompt_length, max_length=4096, top_p=0.8,
+    def lets_stream_chat(self, query_list, history_list, max_prompt_length=3096, max_length=4096, top_p=0.8,
                          temperature=0.8, **kwargs):
+        if self.logger:
+            self.logger.info(str({'max_length': max_length, 'top_p': top_p, 'temperature': temperature,
+                                  'max_prompt_length': max_prompt_length}) + '\n')
+            self.logger.info(str(kwargs) + '\n')
 
         batch_prompt = []
         for i in range(len(query_list)):
@@ -182,7 +187,7 @@ class ChatGLM(BaseModel):
 
             if self.logger:
                 self.logger.info(str({'prompt_len': len(prompt), 'prompt': prompt}) + '\n')
-                self.logger.info(str({'max_length': max_length, 'top_p': top_p, 'temperature':temperature}) + '\n')
+
             batch_prompt.append(prompt)
 
         for ind in range(len(batch_prompt)):

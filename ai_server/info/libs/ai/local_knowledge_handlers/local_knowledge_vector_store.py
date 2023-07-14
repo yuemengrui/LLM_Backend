@@ -2,6 +2,7 @@
 # @Author : YueMengRui
 import os
 import numpy as np
+from copy import deepcopy
 from info.utils.MD5_Utils import md5hex
 from typing import List, Tuple
 from .file_loader import load_file
@@ -10,21 +11,26 @@ from langchain.docstore.document import Document
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 
 
-def seperate_list(ls: List[int]) -> List[List[int]]:
+def seperate_list(ls: List[int], index_to_docstore_id, docstore) -> List[List[int]]:
     lists = []
     ls1 = [ls[0]]
+    file_hash = docstore.search(index_to_docstore_id[ls1[-1]]).metadata['file_hash']
     for i in range(1, len(ls)):
-        if ls[i - 1] + 1 == ls[i]:
+        _file_hash = docstore.search(index_to_docstore_id[ls[i]]).metadata['file_hash']
+        if _file_hash == file_hash:
             ls1.append(ls[i])
         else:
-            lists.append(ls1)
+            lists.append(deepcopy(ls1))
             ls1 = [ls[i]]
+            file_hash = _file_hash
+
     lists.append(ls1)
     return lists
 
 
 def similarity_search_with_score_by_vector(
-        self, embedding: List[float], k: int = 4, **kwargs
+        self, embedding: List[float], k: int = 4, knowledge_chunk_size=512, knowledge_score_threshold=250,
+        knowledge_good_score=50, logger=None, **kwargs
 ) -> List[Tuple[Document, float]]:
     scores, indices = self.index.search(np.array([embedding], dtype=np.float32), k)
     docs = []
@@ -44,13 +50,22 @@ def similarity_search_with_score_by_vector(
             continue
         id_set.add(i)
         docs_len = len(doc.page_content)
+        chunk_size = knowledge_chunk_size * (
+                (knowledge_score_threshold - max(knowledge_good_score, int(scores[0][j]))) / (
+                knowledge_score_threshold - knowledge_good_score))
+
+        if logger:
+            logger.info(str({'knowledge_chunk_size': knowledge_chunk_size,
+                             'knowledge_score_threshold': knowledge_score_threshold,
+                             'knowledge_good_score': knowledge_good_score, 'chunk_size': chunk_size}) + '\n')
+
         for k in range(1, max(i, store_len - i)):
             break_flag = False
             for l in [i + k, i - k]:
                 if 0 <= l < len(self.index_to_docstore_id):
                     _id0 = self.index_to_docstore_id[l]
                     doc0 = self.docstore.search(_id0)
-                    if docs_len + len(doc0.page_content) > self.chunk_size:
+                    if docs_len + len(doc0.page_content) > chunk_size:
                         break_flag = True
                         break
                     elif doc0.metadata["source"] == doc.metadata["source"]:
@@ -63,7 +78,7 @@ def similarity_search_with_score_by_vector(
     if len(id_set) == 0:
         return []
     id_list = sorted(list(id_set))
-    id_lists = seperate_list(id_list)
+    id_lists = seperate_list(id_list, self.index_to_docstore_id, self.docstore)
     for id_seq in id_lists:
         for id in id_seq:
             if id == id_seq[0]:
@@ -190,15 +205,12 @@ class KnowledgeVectorStore:
             self.write_log({'file load error': '文件均未能成功加载'})
             return False
 
-    def get_docs_with_score(self, docs_with_score, knowledge_score_rate=0.1, knowledge_score_threshold=200, **kwargs):
+    def get_docs_with_score(self, docs_with_score, knowledge_score_rate=0, knowledge_score_threshold=200, **kwargs):
         docs_with_score.sort(key=lambda x: x.metadata['score'])
 
         self.write_log({'related_docs_with_score': docs_with_score})
         docs = []
         others_list = []
-
-        if not isinstance(knowledge_score_rate, float):
-            knowledge_score_rate = 0.1
 
         if not isinstance(knowledge_score_threshold, int):
             knowledge_score_threshold = 200
@@ -211,7 +223,7 @@ class KnowledgeVectorStore:
             else:
                 others_list.append(doc)
 
-        if knowledge_score_rate and docs:
+        if isinstance(knowledge_score_rate, (float, int)) and knowledge_score_rate > 0 and docs:
             first_score = docs[0].metadata['score']
             up_score = first_score + first_score * knowledge_score_rate
             for i in docs[::-1]:
@@ -234,7 +246,7 @@ class KnowledgeVectorStore:
             else:
                 vector_store.merge_from(FAISS.load_local(vector_store_dir, self.embeddings))
 
-        if not isinstance(knowledge_chunk_size, int):
+        if not isinstance(knowledge_chunk_size, (int, float)):
             knowledge_chunk_size = 512
 
         if not isinstance(knowledge_chunk_connect, bool):
@@ -243,13 +255,14 @@ class KnowledgeVectorStore:
         if not isinstance(vector_search_top_k, int):
             vector_search_top_k = 10
 
-        self.write_log({'knowledge_chunk_size': knowledge_chunk_size, 'knowledge_chunk_connect': knowledge_chunk_connect,
-                        'vector_search_top_k': vector_search_top_k})
+        self.write_log(
+            {'knowledge_chunk_size': knowledge_chunk_size, 'knowledge_chunk_connect': knowledge_chunk_connect,
+             'vector_search_top_k': vector_search_top_k})
         FAISS.similarity_search_with_score_by_vector = similarity_search_with_score_by_vector
-        vector_store.chunk_size = knowledge_chunk_size
         vector_store.chunk_conent = knowledge_chunk_connect
 
-        related_docs_with_score = vector_store.similarity_search_with_score(query, k=vector_search_top_k)
+        related_docs_with_score = vector_store.similarity_search_with_score(query, k=vector_search_top_k,
+                                                                            logger=self.logger, **kwargs)
 
         related_docs = self.get_docs_with_score(related_docs_with_score, **kwargs)
 
@@ -282,11 +295,14 @@ class KnowledgeVectorStore:
 
         return prompt, true_related_docs
 
-    def generate_knowledge_based_prompt(self, query, vector_store_dir_list, max_prompt_len=3000, prompt_template=None,
+    def generate_knowledge_based_prompt(self, query, vector_store_dir_list, max_prompt_length=3096,
+                                        prompt_template=None,
                                         **kwargs):
+        self.write_log({'max_prompt_length': max_prompt_length, 'prompt_template': prompt_template})
+        self.write_log(kwargs)
         vector_store_dir_list = self.check_vector_store(vector_store_dir_list)
         related_docs = self.get_related_docs(query, vector_store_dir_list, **kwargs)
 
-        knowledge_based_prompt, docs = self.generate_prompt(related_docs, query, max_prompt_len, prompt_template)
+        knowledge_based_prompt, docs = self.generate_prompt(related_docs, query, max_prompt_length, prompt_template)
 
         return knowledge_based_prompt, docs

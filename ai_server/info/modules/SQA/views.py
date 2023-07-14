@@ -92,9 +92,8 @@ def llm_chat_sqa_stream():
     if not queries:
         return jsonify(errcode=RET.PARAMERR, errmag=error_map[RET.PARAMERR])
 
-    origin_query_list, prompt_list, history_list, sources, generation_configs = task_data_handler.auto_handler(queries)
+    origin_query_list, prompt_list, history_list, sources, generation_configs, custom_configs = task_data_handler.auto_handler(
+        queries)
 
-    return Response(
-        llm_stream_generate(prompt_list, history_list, current_app.config['MAX_PROMPT_LENGTH'], origin_query_list,
-                            sources, **generation_configs),
-        mimetype='text/event-stream')
+    return Response(llm_stream_generate(prompt_list, history_list, origin_query_list, sources, **generation_configs,
+                                        **custom_configs), mimetype='text/event-stream')

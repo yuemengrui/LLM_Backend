@@ -4,9 +4,8 @@ import json
 from info import llm
 
 
-def llm_stream_generate(prompt_list, history_list, max_prompt_length, base_query_list, sources=None, **kwargs):
-    for resp_list, history_list in llm.lets_stream_chat(prompt_list, history_list, max_prompt_length,
-                                                        **kwargs):
+def llm_stream_generate(prompt_list, history_list, base_query_list, sources=None, **kwargs):
+    for resp_list, history_list in llm.lets_stream_chat(prompt_list, history_list, **kwargs):
         responses = []
         for i in range(len(resp_list)):
             history_list[i][-1][0] = base_query_list[i]
