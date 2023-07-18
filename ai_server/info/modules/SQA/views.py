@@ -19,7 +19,7 @@ def llm_chat_sqa():
     current_app.logger.info(str({'queries': queries}) + '\n')
 
     if not queries:
-        return jsonify(errcode=RET.PARAMERR, errmag=error_map[RET.PARAMERR])
+        return jsonify(errcode=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
 
     origin_query_list, prompt_list, history_list, sources, generation_configs, custom_configs = task_data_handler.auto_handler(
         queries)
@@ -39,7 +39,7 @@ def llm_chat_sqa_stream():
     current_app.logger.info(str({'queries': queries}) + '\n')
 
     if not queries:
-        return jsonify(errcode=RET.PARAMERR, errmag=error_map[RET.PARAMERR])
+        return jsonify(errcode=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
 
     origin_query_list, prompt_list, history_list, sources, generation_configs, custom_configs = task_data_handler.auto_handler(
         queries)
