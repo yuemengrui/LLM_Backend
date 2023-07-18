@@ -135,7 +135,7 @@ class TaskDataHandler:
         prompt = query
         if prompt_template:
             try:
-                prompt = prompt_template.format(query)
+                prompt = prompt_template.format(query=query)
             except:
                 prompt = query
 
