@@ -23,7 +23,7 @@ class TaskDataHandler:
         self.generation_configs = {}
         self.generation_configs.update({'max_length': 8192})
         self.custom_configs = {}
-        self.generation_configs.update({'max_prompt_length': self.generation_configs['max_length'] - 1000})
+        self.custom_configs.update({'max_prompt_length': self.generation_configs['max_length'] - 1000})
 
     def auto_handler(self, request_datas):
         origin_query_list = []

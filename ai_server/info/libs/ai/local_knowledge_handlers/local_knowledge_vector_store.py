@@ -50,14 +50,15 @@ def similarity_search_with_score_by_vector(
             continue
         id_set.add(i)
         docs_len = len(doc.page_content)
-        chunk_size = knowledge_chunk_size * (
+        chunk_size = max(0.0, knowledge_chunk_size * (
                 (knowledge_score_threshold - max(knowledge_good_score, int(scores[0][j]))) / (
-                knowledge_score_threshold - knowledge_good_score))
+                knowledge_score_threshold - knowledge_good_score)))
 
         if logger:
             logger.info(str({'knowledge_chunk_size': knowledge_chunk_size,
                              'knowledge_score_threshold': knowledge_score_threshold,
-                             'knowledge_good_score': knowledge_good_score, 'chunk_size': chunk_size}) + '\n')
+                             'knowledge_good_score': knowledge_good_score, 'score': int(scores[0][j]),
+                             'chunk_size': chunk_size}) + '\n')
 
         for k in range(1, max(i, store_len - i)):
             break_flag = False

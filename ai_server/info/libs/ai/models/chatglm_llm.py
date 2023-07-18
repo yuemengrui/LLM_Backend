@@ -160,8 +160,7 @@ class ChatGLM(BaseModel):
                          temperature=0.8, **kwargs):
         if self.logger:
             self.logger.info(str({'max_length': max_length, 'top_p': top_p, 'temperature': temperature,
-                                  'max_prompt_length': max_prompt_length}) + '\n')
-            self.logger.info(str(kwargs) + '\n')
+                                  'max_prompt_length': max_prompt_length}) + '\n' + str(kwargs) + '\n')
 
         batch_prompt = []
         for i in range(len(query_list)):
