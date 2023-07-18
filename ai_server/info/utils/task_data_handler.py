@@ -14,8 +14,7 @@ class TaskDataHandler:
         self.task_mapping = {
             "sqa": (self._sqa, prompt_templates['sqa']),
             "knowledge": (self._knowledge, prompt_templates['knowledge']),
-            "translation": (self._translation, prompt_templates['translation']),
-            "summary": (self._summary, prompt_templates['summary'])
+            "general": (self._general, '')
         }
 
         self.reset_configs()
@@ -49,7 +48,7 @@ class TaskDataHandler:
                 continue
 
             if task_type not in self.task_mapping:
-                task_type = 'sqa'
+                task_type = 'general'
 
             task_func, base_prompt_template = self.task_mapping[task_type]
 
@@ -128,27 +127,17 @@ class TaskDataHandler:
 
         return query, prompt, history, source
 
-    def _translation(self, data, base_prompt_template):
-        query = data.get('query', '')
-        # history = data.get('history', [])
-        prompt_template = data.get('prompt_template', None)
-
-        if not (prompt_template and '{query}' in prompt_template):
-            prompt_template = base_prompt_template
-
-        prompt = prompt_template.format(query=query)
-
-        return query, prompt, [], None
-
-    def _summary(self, data, base_prompt_template):
+    def _general(self, data, base_prompt_template=''):
         query = data.get('query', '')
         history = data.get('history', [])
         prompt_template = data.get('prompt_template', None)
 
-        if not (prompt_template and '{query}' in prompt_template):
-            prompt_template = base_prompt_template
-
-        prompt = prompt_template.format(query=query)
+        prompt = query
+        if prompt_template:
+            try:
+                prompt = prompt_template.format(query)
+            except:
+                prompt = query
 
         return query, prompt, history, None
 
