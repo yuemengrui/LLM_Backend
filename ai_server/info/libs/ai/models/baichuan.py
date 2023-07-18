@@ -66,11 +66,33 @@ class BaiChuan(BaseModel):
         total_input.append(self.model.generation_config.assistant_token_id)
         return total_input
 
-    def letschat(self, **kwargs):
-        """
-        return answer history
-        """
-        pass
+    def letschat(self, query_list, history_list, **kwargs):
+        if self.logger:
+            self.logger.info(str(kwargs) + '\n')
+        batch_prompt = []
+
+        for i in range(len(query_list)):
+            query = query_list[i]
+            history = history_list[i]
+            messages = []
+            for his in history:
+                messages.append({'role': 'user', 'content': his[0]})
+                messages.append({'role': 'assistant', 'content': his[1]})
+
+            messages.append({'role': 'user', 'content': query})
+
+            batch_prompt.append(self._build_chat_input(messages))
+
+        batch_input = torch.LongTensor(batch_prompt).to(self.device)
+
+        for ind in range(len(batch_prompt)):
+            history_list[ind].append(['', ''])
+
+        generation_config = self.model.generation_config.update(**kwargs)
+
+        resp_list = self.model.batch_chat(self.tokenizer, batch_input, generation_config)
+
+        return resp_list
 
     def lets_stream_chat(self, query_list, history_list, **kwargs):
         if self.logger:
