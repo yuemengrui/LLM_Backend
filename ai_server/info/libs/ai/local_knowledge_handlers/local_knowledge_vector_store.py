@@ -263,7 +263,9 @@ class KnowledgeVectorStore:
         vector_store.chunk_conent = knowledge_chunk_connect
 
         related_docs_with_score = vector_store.similarity_search_with_score(query, k=vector_search_top_k,
-                                                                            logger=self.logger, **kwargs)
+                                                                            logger=self.logger,
+                                                                            knowledge_chunk_size=knowledge_chunk_size,
+                                                                            **kwargs)
 
         related_docs = self.get_docs_with_score(related_docs_with_score, **kwargs)
 
