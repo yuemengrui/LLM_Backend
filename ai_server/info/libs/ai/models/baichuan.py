@@ -88,9 +88,9 @@ class BaiChuan(BaseModel):
         for ind in range(len(batch_prompt)):
             history_list[ind].append(['', ''])
 
-        generation_config = self.model.generation_config.update(**kwargs)
+        # generation_config = self.model.generation_config.update(**kwargs)
 
-        resp_list = self.model.batch_chat(self.tokenizer, batch_input, generation_config)
+        resp_list = self.model.batch_chat(self.tokenizer, batch_input, self.model.generation_config)
 
         return resp_list
 
