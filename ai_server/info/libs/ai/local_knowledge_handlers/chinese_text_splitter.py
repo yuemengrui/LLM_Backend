@@ -4,7 +4,7 @@ from typing import List
 
 
 class ChineseTextSplitter(CharacterTextSplitter):
-    def __init__(self, pdf: bool = False, sentence_size: int = 1024, **kwargs):
+    def __init__(self, pdf: bool = False, sentence_size: int = 512, **kwargs):
         super().__init__(**kwargs)
         self.pdf = pdf
         self.sentence_size = sentence_size
@@ -41,11 +41,12 @@ class ChineseTextSplitter(CharacterTextSplitter):
         ls = [i for i in text.split("\n") if i]
         for ele in ls:
             if len(ele) > self.sentence_size:
-                ele1 = re.sub(r'([;；,，.]["’”」』]{0,2})([^;；,，.])', r'\1\n\2', ele)
+                ele1 = re.sub(r'([;；]["’”」』]{0,2})([^;；])', r'\1\n\2', ele)
                 ele1_ls = ele1.split("\n")
                 for ele_ele1 in ele1_ls:
                     if len(ele_ele1) > self.sentence_size:
-                        ele_ele2 = re.sub(r'([\n]{1,}| {2,}["’”」』]{0,2})([^\s])', r'\1\n\2', ele_ele1)
+                        ele_ele1 = re.sub(r'([,，.]["’”」』]{0,2})([^,，.])', r'\1\n\2', ele_ele1)
+                        ele_ele2 = re.sub(r'([\n]{1,}| {2,}[;；"’”」』]{0,2})([^\s])', r'\1\n\2', ele_ele1)
                         ele2_ls = ele_ele2.split("\n")
                         for ele_ele2 in ele2_ls:
                             if len(ele_ele2) > self.sentence_size:
