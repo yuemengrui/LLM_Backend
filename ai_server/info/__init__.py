@@ -57,6 +57,7 @@ from info.libs.ai import build_model, KnowledgeVectorStore
 llm = build_model(model_type=app.config['LLM_MODEL_TYPE'],
                   model_name_or_path=app.config['LLM_MODEL_NAME_OR_PATH'],
                   history_len=app.config['LLM_HISTORY_LEN'],
+                  device=app.config['LLM_DEVICE'],
                   logger=app.logger)
 
 knowledge_vector_store = KnowledgeVectorStore(vector_store_root_dir=app.config['VS_ROOT_DIR'],
@@ -64,8 +65,9 @@ knowledge_vector_store = KnowledgeVectorStore(vector_store_root_dir=app.config['
                                               embedding_device=app.config['EMBEDDING_DEVICE'],
                                               logger=app.logger)
 
-
 from info.modules.SQA import sqa_blu
+
 app.register_blueprint(sqa_blu)
 from info.modules.Knowledge import knowledge_blu
+
 app.register_blueprint(knowledge_blu)

@@ -9,23 +9,30 @@ from transformers.generation.utils import GenerationConfig
 
 class BaiChuan(BaseModel):
 
-    def __init__(self, model_name_or_path, logger=None, **kwargs):
+    def __init__(self, model_name_or_path, logger=None, device='cuda', **kwargs):
         self.model = None
         self.tokenizer = None
         self.device = None
         self.logger = logger
-        self._load_model(model_name_or_path)
+        self._load_model(model_name_or_path, device)
         if self.logger:
             self.logger.info(str({'config': self.model.config}) + '\n')
             self.logger.info(str({'config': self.model.generation_config}) + '\n')
 
-    def _load_model(self, model_name_or_path):
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_name_or_path,
-            torch_dtype=torch.float16,
-            device_map="auto",
-            trust_remote_code=True
-        )
+    def _load_model(self, model_name_or_path, device):
+
+        if device == 'mps':
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name_or_path,
+                trust_remote_code=True
+            ).half().to('mps')
+        else:
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name_or_path,
+                torch_dtype=torch.float16,
+                device_map="auto",
+                trust_remote_code=True
+            )
         self.model.generation_config = GenerationConfig.from_pretrained(model_name_or_path)
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_name_or_path,
@@ -91,6 +98,8 @@ class BaiChuan(BaseModel):
         self.model.generation_config.update(**kwargs)
 
         resp_list = self.model.batch_chat(self.tokenizer, batch_input, self.model.generation_config)
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()
 
         return resp_list
 
@@ -118,4 +127,6 @@ class BaiChuan(BaseModel):
 
         generation_config = self.model.generation_config.update(**kwargs)
         for response in self.model.batch_stream_chat(self.tokenizer, batch_input, generation_config):
+            if torch.backends.mps.is_available():
+                torch.mps.empty_cache()
             yield response, history_list
