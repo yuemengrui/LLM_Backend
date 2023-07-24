@@ -12,6 +12,8 @@ def torch_gc(device):
         with torch.cuda.device(device):
             torch.cuda.empty_cache()
             torch.cuda.ipc_collect()
+    elif torch.backends.mps.is_available():
+        torch.mps.empty_cache()
 
 
 def auto_configure_device_map(num_gpus: int) -> Dict[str, int]:
