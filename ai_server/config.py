@@ -21,7 +21,7 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     """开发模式下的配置"""
-    DEBUG = logging.INFO
+    LOG_LEVEL = logging.INFO
 
     LLM_MODEL_TYPE = ''
     LLM_MODEL_NAME_OR_PATH = ''
