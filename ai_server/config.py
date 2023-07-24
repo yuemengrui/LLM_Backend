@@ -25,14 +25,13 @@ class DevelopmentConfig(Config):
 
     LLM_MODEL_TYPE = ''
     LLM_MODEL_NAME_OR_PATH = ''
+    LLM_DEVICE = 'cuda'
     LLM_HISTORY_LEN = 10
 
     EMBEDDING_MODEL_NAME_OR_PATH = ''
     EMBEDDING_DEVICE = "cuda"
 
     VS_ROOT_DIR = "./vector_store"
-
-    MAX_PROMPT_LENGTH = 3000
 
 
 class UatConfig(Config):
