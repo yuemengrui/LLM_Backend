@@ -103,14 +103,18 @@ class ChatGLM(BaseModel):
 
                 self.model = dispatch_model(model, device_map=device_map)
         else:
-            self.model = (
-                AutoModel.from_pretrained(
-                    model_name_or_path,
-                    trust_remote_code=True,
-                    **kwargs)
-                .float()
-                .to(device)
-            )
+            if device == 'mps':
+                self.model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True).to('mps')
+
+            else:
+                self.model = (
+                    AutoModel.from_pretrained(
+                        model_name_or_path,
+                        trust_remote_code=True,
+                        **kwargs)
+                    .float()
+                    .to(device)
+                )
 
         self.model = self.model.eval()
 
