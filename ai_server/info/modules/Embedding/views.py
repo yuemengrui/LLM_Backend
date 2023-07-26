@@ -31,6 +31,7 @@ def text_embedding():
             if text_split == 0:
                 embeddings = embedding_model.encode(sentences)
                 embeddings = [x.tolist() for x in embeddings]
+                i.update({"sentences": sentences})
                 i.update({"embeddings": embeddings})
                 res.append(i)
             else:
@@ -39,6 +40,7 @@ def text_embedding():
                 sentences = text_splitter.split_text(text)
                 embeddings = embedding_model.encode(sentences)
                 embeddings = [x.tolist() for x in embeddings]
+                i.update({"sentences": sentences})
                 i.update({"embeddings": embeddings})
                 res.append(i)
         except Exception as e:
