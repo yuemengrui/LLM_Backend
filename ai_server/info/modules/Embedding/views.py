@@ -15,7 +15,7 @@ def text_embedding():
     data = request.get_data()
     json_data = json.loads(data.decode("utf-8"))
     sentences = json_data.get('sentences', [])
-    text_split = json_data.get('split', 0)
+    text_split = json_data.get('text_split', 0)
 
     current_app.logger.info(str({'sentences': sentences}) + '\n')
 
