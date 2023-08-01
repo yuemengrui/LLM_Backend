@@ -9,6 +9,8 @@ from flask_limiter import Limiter
 from sentence_transformers import SentenceTransformer
 from logging.handlers import TimedRotatingFileHandler
 
+import nltk
+nltk.data.path = ['./nltk_data'] + nltk.data.path
 
 def setup_logging(log_level):
     logging.basicConfig(level=log_level)

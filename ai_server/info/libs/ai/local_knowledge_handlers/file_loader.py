@@ -1,9 +1,5 @@
 # *_*coding:utf-8 *_*
 # @Author : YueMengRui
-import nltk
-
-nltk.download()
-
 import cv2
 import fitz
 import base64
