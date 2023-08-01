@@ -23,26 +23,27 @@ def text_embedding():
         return jsonify(errcode=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
 
     res = []
-    embedding_model_list_copy = deepcopy(embedding_model_list)
 
-    for i in embedding_model_list_copy:
-        embedding_model = i.pop('embedding_model')
+    for i in embedding_model_list:
+        temp = {}
         try:
             if text_split == 0:
-                embeddings = embedding_model.encode(sentences)
+                embeddings = i['embedding_model'].encode(sentences)
                 embeddings = [x.tolist() for x in embeddings]
-                i.update({"sentences": sentences})
-                i.update({"embeddings": embeddings})
-                res.append(i)
+                temp.update({"sentences": sentences})
+                temp.update({"embeddings": embeddings})
+                temp.update({k: v for k, v in i.items() if k != 'embedding_model'})
+                res.append(deepcopy(temp))
             else:
                 text_splitter = ChineseTextSplitter()
                 text = "\n".join(sentences)
                 sentences = text_splitter.split_text(text)
-                embeddings = embedding_model.encode(sentences)
+                embeddings = i['embedding_model'].encode(sentences)
                 embeddings = [x.tolist() for x in embeddings]
-                i.update({"sentences": sentences})
-                i.update({"embeddings": embeddings})
-                res.append(i)
+                temp.update({"sentences": sentences})
+                temp.update({"embeddings": embeddings})
+                temp.update({k: v for k, v in i.items() if k != 'embedding_model'})
+                res.append(deepcopy(temp))
         except Exception as e:
             current_app.logger.error(str({'EXCEPTION': e}) + '\n')
 

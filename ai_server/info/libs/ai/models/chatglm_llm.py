@@ -168,6 +168,7 @@ class ChatGLM(BaseModel):
 
     def lets_stream_chat(self, query_list, history_list, max_prompt_length=3096, max_length=4096, top_p=0.8,
                          temperature=0.8, **kwargs):
+        torch_gc(self.device)
         if self.logger:
             self.logger.info(str({'max_length': max_length, 'top_p': top_p, 'temperature': temperature,
                                   'max_prompt_length': max_prompt_length}) + '\n' + str(kwargs) + '\n')
