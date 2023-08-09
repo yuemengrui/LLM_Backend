@@ -106,27 +106,19 @@ class BaiChuan(BaseModel):
     def lets_stream_chat(self, query_list, history_list, **kwargs):
         if self.logger:
             self.logger.info(str(kwargs) + '\n')
-        batch_prompt = []
 
-        for i in range(len(query_list)):
-            query = query_list[i]
-            history = history_list[i]
-            messages = []
-            for his in history:
-                messages.append({'role': 'user', 'content': his[0]})
-                messages.append({'role': 'assistant', 'content': his[1]})
+        query = query_list[0]
+        history = history_list[0]
+        messages = []
+        for his in history:
+            messages.append({'role': 'user', 'content': his[0]})
+            messages.append({'role': 'assistant', 'content': his[1]})
 
-            messages.append({'role': 'user', 'content': query})
-
-            batch_prompt.append(self._build_chat_input(messages))
-
-        batch_input = torch.LongTensor(batch_prompt).to(self.device)
-
-        for ind in range(len(batch_prompt)):
-            history_list[ind].append(['', ''])
+        messages.append({'role': 'user', 'content': query})
 
         generation_config = self.model.generation_config.update(**kwargs)
-        for response in self.model.batch_stream_chat(self.tokenizer, batch_input, generation_config):
+
+        for response in self.model.chat(self.tokenizer, messages, stream=True, generation_config=generation_config):
             if torch.backends.mps.is_available():
                 torch.mps.empty_cache()
-            yield response, history_list
+            yield [response], history_list
