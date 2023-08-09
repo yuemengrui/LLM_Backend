@@ -10,7 +10,9 @@ from sentence_transformers import SentenceTransformer
 from logging.handlers import TimedRotatingFileHandler
 
 import nltk
+
 nltk.data.path = ['./nltk_data'] + nltk.data.path
+
 
 def setup_logging(log_level):
     logging.basicConfig(level=log_level)
@@ -56,11 +58,13 @@ limiter.init_app(app)
 
 from info.libs.ai import build_model, KnowledgeVectorStore
 
-llm = build_model(model_type=app.config['LLM_MODEL_TYPE'],
-                  model_name_or_path=app.config['LLM_MODEL_NAME_OR_PATH'],
-                  history_len=app.config['LLM_HISTORY_LEN'],
-                  device=app.config['LLM_DEVICE'],
-                  logger=app.logger)
+llm_dict = {}
+for llm_config in deepcopy(app.config['LLM_MODEL_LIST']):
+    if os.path.exists(llm_config['model_name_or_path']):
+        llm = build_model(logger=app.logger, **llm_config)
+
+        llm_dict[llm_config['model_name']] = {'model_name': llm_config['model_name'],
+                                              'embedding_dim': llm_config['embedding_dim'], 'model': llm}
 
 knowledge_vector_store = KnowledgeVectorStore(vector_store_root_dir=app.config['VS_ROOT_DIR'],
                                               embedding_model_name_or_path=app.config['EMBEDDING_MODEL_LIST'][0][
@@ -88,8 +92,10 @@ knowledge_vector_store = KnowledgeVectorStore(vector_store_root_dir=app.config['
 
 
 from info.modules.SQA import sqa_blu
+
 app.register_blueprint(sqa_blu)
 from info.modules.Knowledge import knowledge_blu
+
 app.register_blueprint(knowledge_blu)
 # from info.modules.Embedding import embedding_blu
 # app.register_blueprint(embedding_blu)

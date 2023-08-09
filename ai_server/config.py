@@ -22,13 +22,26 @@ class Config(object):
 class DevelopmentConfig(Config):
     """开发模式下的配置"""
     LOG_LEVEL = logging.INFO
+    VS_ROOT_DIR = "./vector_store"
 
-    LLM_MODEL_TYPE = ''
-    LLM_MODEL_NAME_OR_PATH = ''
-    LLM_DEVICE = 'cuda'
     LLM_HISTORY_LEN = 10
 
-    VS_ROOT_DIR = "./vector_store"
+    LLM_MODEL_LIST = [
+        {
+            "model_type": "ChatGLM",
+            "model_name": "ChatGLM2-6B",
+            "embedding_dim": 4096,
+            "model_name_or_path": "",
+            "device": "cuda"
+        },
+        {
+            "model_type": "Baichuan",
+            "model_name": "Baichuan-13B",
+            "embedding_dim": 5120,
+            "model_name_or_path": "",
+            "device": "cuda"
+        }
+    ]
 
     EMBEDDING_MODEL_LIST = [
         {
@@ -36,14 +49,6 @@ class DevelopmentConfig(Config):
             "model_name": "m3e-base",
             "max_seq_length": 512,
             "embedding_dim": 768,
-            "model_path": "",
-            "device": "cuda"
-        },
-        {
-            "embedding_type": "text",
-            "model_name": "text2vec-large-chinese",
-            "max_seq_length": 512,
-            "embedding_dim": 1024,
             "model_path": "",
             "device": "cuda"
         }

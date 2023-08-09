@@ -1,11 +1,11 @@
 # *_*coding:utf-8 *_*
 # @Author : YueMengRui
 import json
-from info import llm
+from info import llm_dict
 
 
-def llm_stream_generate(prompt_list, history_list, base_query_list, sources=None, **kwargs):
-    for resp_list, history_list in llm.lets_stream_chat(prompt_list, history_list, **kwargs):
+def llm_stream_generate(model_name, prompt_list, history_list, base_query_list, sources=None, **kwargs):
+    for resp_list, history_list in llm_dict[model_name]['model'].lets_stream_chat(prompt_list, history_list, **kwargs):
         responses = []
         for i in range(len(resp_list)):
             history_list[i][-1][0] = base_query_list[i]
@@ -21,8 +21,8 @@ def llm_stream_generate(prompt_list, history_list, base_query_list, sources=None
         yield json.dumps(responses, ensure_ascii=False)
 
 
-def llm_generate(prompt_list, history_list, base_query_list, sources=None, **kwargs):
-    resp_list = llm.letschat(prompt_list, history_list, **kwargs)
+def llm_generate(model_name, prompt_list, history_list, base_query_list, sources=None, **kwargs):
+    resp_list = llm_dict[model_name]['model'].letschat(prompt_list, history_list, **kwargs)
     responses = []
 
     for i in range(len(base_query_list)):
