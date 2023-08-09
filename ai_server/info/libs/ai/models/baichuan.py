@@ -107,6 +107,11 @@ class BaiChuan(BaseModel):
         if self.logger:
             self.logger.info(str(kwargs) + '\n')
 
+        resp = []
+        for ind in range(len(query_list)):
+            resp.append("")
+            history_list[ind].append(['', ''])
+
         query = query_list[0]
         history = history_list[0]
         messages = []
@@ -121,4 +126,5 @@ class BaiChuan(BaseModel):
         for response in self.model.chat(self.tokenizer, messages, stream=True, generation_config=generation_config):
             if torch.backends.mps.is_available():
                 torch.mps.empty_cache()
-            yield [response], history_list
+                resp[0] = response
+            yield resp, history_list
