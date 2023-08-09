@@ -120,7 +120,7 @@ class ChatGLM(BaseModel):
 
         self.model = self.model.eval()
 
-    def letschat(self, query_list, history_list, max_prompt_length=3096, max_length=4096, top_p=0.8, temperature=0.8,
+    def letschat(self, query_list, history_list, max_prompt_length=7192, max_length=8192, top_p=0.8, temperature=0.8,
                  **kwargs):
 
         if self.logger:
@@ -166,7 +166,7 @@ class ChatGLM(BaseModel):
 
         return response_list
 
-    def lets_stream_chat(self, query_list, history_list, max_prompt_length=3096, max_length=4096, top_p=0.8,
+    def lets_stream_chat(self, query_list, history_list, max_prompt_length=7192, max_length=8192, top_p=0.8,
                          temperature=0.8, **kwargs):
 
         if self.logger:
