@@ -121,9 +121,9 @@ class BaiChuan(BaseModel):
 
         messages.append({'role': 'user', 'content': query})
 
-        generation_config = self.model.generation_config.update(**kwargs)
+        # generation_config = self.model.generation_config.update(**kwargs)
 
-        for response in self.model.chat(self.tokenizer, messages, stream=True, generation_config=generation_config):
+        for response in self.model.chat(self.tokenizer, messages, stream=True, generation_config=self.model.generation_config):
             if torch.backends.mps.is_available():
                 torch.mps.empty_cache()
                 resp[0] = response
