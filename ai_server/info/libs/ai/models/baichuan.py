@@ -2,6 +2,7 @@
 # @Author : YueMengRui
 import json
 import torch
+import torch.mps
 from .base_model import BaseModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation.utils import GenerationConfig
@@ -95,7 +96,7 @@ class BaiChuan(BaseModel):
         for ind in range(len(batch_prompt)):
             history_list[ind].append(['', ''])
 
-        self.model.generation_config.update(**kwargs)
+        #self.model.generation_config.update(**kwargs)
 
         resp_list = self.model.batch_chat(self.tokenizer, batch_input, self.model.generation_config)
         if torch.backends.mps.is_available():
@@ -124,7 +125,9 @@ class BaiChuan(BaseModel):
         # generation_config = self.model.generation_config.update(**kwargs)
 
         for response in self.model.chat(self.tokenizer, messages, stream=True, generation_config=self.model.generation_config):
+
             if torch.backends.mps.is_available():
                 torch.mps.empty_cache()
-                resp[0] = response
+
+            resp[0] = response
             yield resp, history_list
