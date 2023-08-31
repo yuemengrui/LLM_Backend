@@ -23,7 +23,7 @@ class BaiChuan(BaseModel):
     def _load_model(self, model_name_or_path, device):
 
         if device == 'mps':
-            torch.mps.set_per_process_memory_fraction(1.0)
+            torch.mps.set_per_process_memory_fraction(0.8)
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_name_or_path,
                 trust_remote_code=True
