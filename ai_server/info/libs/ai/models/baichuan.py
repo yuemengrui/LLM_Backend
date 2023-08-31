@@ -23,6 +23,7 @@ class BaiChuan(BaseModel):
     def _load_model(self, model_name_or_path, device):
 
         if device == 'mps':
+            torch.mps.set_per_process_memory_fraction(1.0)
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_name_or_path,
                 trust_remote_code=True
@@ -96,7 +97,7 @@ class BaiChuan(BaseModel):
         for ind in range(len(batch_prompt)):
             history_list[ind].append(['', ''])
 
-        #self.model.generation_config.update(**kwargs)
+        # self.model.generation_config.update(**kwargs)
 
         resp_list = self.model.batch_chat(self.tokenizer, batch_input, self.model.generation_config)
         if torch.backends.mps.is_available():
@@ -124,7 +125,8 @@ class BaiChuan(BaseModel):
 
         # generation_config = self.model.generation_config.update(**kwargs)
 
-        for response in self.model.chat(self.tokenizer, messages, stream=True, generation_config=self.model.generation_config):
+        for response in self.model.chat(self.tokenizer, messages, stream=True,
+                                        generation_config=self.model.generation_config):
 
             if torch.backends.mps.is_available():
                 torch.mps.empty_cache()
