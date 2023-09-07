@@ -33,6 +33,10 @@ class BaiChuan(BaseModel):
             self.logger.info(str({'config': self.model.generation_config}) + '\n')
             self.logger.info(str({'max_length': self.max_length, 'max_prompt_length': self.max_prompt_length}) + '\n')
 
+        # warmup
+        self.letschat(['你好'], [[]])
+
+
     def _load_model(self, model_name_or_path, device):
 
         if device == 'mps':
