@@ -156,6 +156,7 @@ class BaiChuan(BaseModel):
 
         resp_list = self.model.batch_chat(self.tokenizer, batch_inputs, self.model.generation_config, **kwargs)
 
+        torch_gc(self.device)
         return resp_list
 
     def lets_stream_chat(self, prompt_list, history_list, **kwargs):
