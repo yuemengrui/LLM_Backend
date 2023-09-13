@@ -1,6 +1,8 @@
 # *_*coding:utf-8 *_*
 # @Author : YueMengRui
 import json
+import time
+
 import torch
 import torch.mps
 import numpy as np
@@ -203,8 +205,16 @@ class BaiChuan(BaseModel):
 
         for resp_list in self.model.batch_chat(self.tokenizer, batch_inputs, self.model.generation_config, stream=True,
                                                **kwargs):
+            start = time.time()
+            outputs = []
             for i in range(batch_len):
+                generation_tokens = len(self.tokenizer.encode(resp_list[i]))
+                average_speed = f"{generation_tokens / (time.time() -start):.3f} token/s"
                 batch_history_list[i][-1][-1] = resp_list[i]
 
+                outputs.append({"average_speed":average_speed})
+
             torch_gc(self.device)
+            if self.logger:
+                self.logger.info(str({'token_average_speed': outputs}) + '\n')
             yield resp_list, batch_history_list
