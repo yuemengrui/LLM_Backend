@@ -203,18 +203,22 @@ class BaiChuan(BaseModel):
         batch_inputs = torch.LongTensor(batch_inputs).to(self.device)
         batch_len = len(prompt_list)
 
+        average_speed_list = []
+        for _ in range(batch_len):
+            average_speed_list.append('')
+
         start = time.time()
         for resp_list in self.model.batch_chat(self.tokenizer, batch_inputs, self.model.generation_config, stream=True,
                                                **kwargs):
-            outputs = []
             for i in range(batch_len):
                 generation_tokens = len(self.tokenizer.encode(resp_list[i]))
                 average_speed = f"{generation_tokens / (time.time() -start):.3f} token/s"
                 batch_history_list[i][-1][-1] = resp_list[i]
 
-                outputs.append({"average_speed":average_speed})
+                average_speed_list[i] = average_speed
 
-            torch_gc(self.device)
-            if self.logger:
-                self.logger.info(str({'token_average_speed': outputs}) + '\n')
             yield resp_list, batch_history_list
+
+        torch_gc(self.device)
+        if self.logger:
+            self.logger.info(str({'token_average_speed': average_speed_list}) + '\n')
