@@ -203,9 +203,9 @@ class BaiChuan(BaseModel):
         batch_inputs = torch.LongTensor(batch_inputs).to(self.device)
         batch_len = len(prompt_list)
 
+        start = time.time()
         for resp_list in self.model.batch_chat(self.tokenizer, batch_inputs, self.model.generation_config, stream=True,
                                                **kwargs):
-            start = time.time()
             outputs = []
             for i in range(batch_len):
                 generation_tokens = len(self.tokenizer.encode(resp_list[i]))
