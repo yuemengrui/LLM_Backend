@@ -121,11 +121,11 @@ class BaiChuan(BaseModel):
 
         batch_inputs = []
         batch_prompt_tokens = []
-        batch_history_list = []
+        # batch_history_list = []
         for i in range(len(prompt_list)):
             history = self.select_history(prompt_list[i], history_list[i], self.max_prompt_length)
-            batch_history_list.append(history)
-            batch_history_list[-1].append([prompt_list[i], ""])
+            # batch_history_list.append(history)
+            # batch_history_list[-1].append([prompt_list[i], ""])
 
             messages = []
             for his in history:
@@ -170,8 +170,6 @@ class BaiChuan(BaseModel):
         batch_history_list = []
         for i in range(len(prompt_list)):
             history = self.select_history(prompt_list[i], history_list[i], self.max_prompt_length)
-            batch_history_list.append(history)
-            batch_history_list[-1].append([prompt_list[i], ""])
 
             messages = []
             for his in history:
@@ -189,6 +187,8 @@ class BaiChuan(BaseModel):
 
             batch_prompt_tokens.append(prompt_tokens)
             batch_inputs.append(np.array(input_prompt))
+            batch_history_list.append(history)
+            batch_history_list[-1].append([prompt_list[i], ""])
 
         max_length = max([len(x) for x in batch_inputs])
         # left padding
