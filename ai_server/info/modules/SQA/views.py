@@ -51,14 +51,17 @@ def llm_chat_sqa_stream():
     current_app.logger.info(str({'model_name': model_name, 'queries': queries}) + '\n')
 
     if not queries:
-        return jsonify(errcode=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
+        return jsonify(errcode=RET.PROMPT, errmsg=error_map[RET.PROMPT])
 
     model_name_list = list(llm_dict.keys())
     if model_name is None or model_name not in model_name_list:
         model_name = model_name_list[0]
 
-    origin_query_list, prompt_list, history_list, sources, generation_configs, custom_configs = task_data_handler.auto_handler(
-        queries)
+    resp_code,origin_query_list, prompt_list, history_list, sources, generation_configs, custom_configs = task_data_handler.auto_handler(
+        queries,model_name)
+
+    if resp_code == 404:
+        return jsonify(errcode=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
 
     return Response(llm_stream_generate(model_name, prompt_list, history_list, origin_query_list, sources, **generation_configs,
                                         **custom_configs), mimetype='text/event-stream')

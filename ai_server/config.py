@@ -25,6 +25,7 @@ class DevelopmentConfig(Config):
     VS_ROOT_DIR = "./vector_store"
 
     LLM_HISTORY_LEN = 10
+    LLM_PROMPT_MAX_LEN = 2048
 
     LLM_MODEL_LIST = [
         {

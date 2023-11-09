@@ -57,7 +57,7 @@ else:
 limiter.init_app(app)
 
 from info.libs.ai import build_model, KnowledgeVectorStore
-
+llm_prompt_max_len = app.config['LLM_PROMPT_MAX_LEN']
 llm_dict = {}
 for llm_config in deepcopy(app.config['LLM_MODEL_LIST']):
     if os.path.exists(llm_config['model_name_or_path']):

@@ -2,7 +2,7 @@
 # @Author : YueMengRui
 from flask import current_app
 from copy import deepcopy
-from info import knowledge_vector_store
+from info import knowledge_vector_store,llm_dict,llm_prompt_max_len
 from info.utils.Prompt_Templates import prompt_templates
 
 
@@ -25,7 +25,8 @@ class TaskDataHandler:
         self.custom_configs = {}
         self.custom_configs.update({'max_prompt_length': self.generation_configs['max_length'] - 1000})
 
-    def auto_handler(self, request_datas):
+    def auto_handler(self, request_datas,model_name):
+        resp_code = 401
         origin_query_list = []
         prompt_list = []
         history_list = []
@@ -41,6 +42,11 @@ class TaskDataHandler:
                 self.generation_configs.update(generation_configs)
 
             if prompt:
+                prompt_len = llm_dict[model_name].token_counter([{'role':'user', 'content':prompt}])
+                if prompt_len >= llm_prompt_max_len:
+                    resp_code = 404
+                    custom_configs = {}
+                    return resp_code, origin_query_list, prompt_list, history_list, sources, generation_configs, custom_configs
                 origin_query_list.append(prompt)
                 prompt_list.append(prompt)
                 history_list.append(history)
@@ -64,7 +70,7 @@ class TaskDataHandler:
         current_app.logger.info(str({'generation_configs': generation_configs}) + '\n')
         current_app.logger.info(str({'custom_configs': custom_configs}) + '\n')
         self.reset_configs()
-        return origin_query_list, prompt_list, history_list, sources, generation_configs, custom_configs
+        return resp_code,origin_query_list, prompt_list, history_list, sources, generation_configs, custom_configs
 
     def _sqa(self, data, base_prompt_template):
         query = data.get('query', '')

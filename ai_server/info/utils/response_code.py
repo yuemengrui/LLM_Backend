@@ -12,6 +12,7 @@ class RET:
     TOKENERR            = 4007
 
     PARAMERR            = 4101
+    PROMPT              = 4102
 
     NODATA              = 4201
     FILEGETERR          = 4202
@@ -38,6 +39,7 @@ error_map = {
     RET.TOKENERR        : u"token错误",
 
     RET.PARAMERR        : u"参数错误",
+    RET.PROMPT          : u"prompt过长",
 
     RET.NODATA          : u"无数据",
     RET.FILEGETERR      : u"文件获取失败",
