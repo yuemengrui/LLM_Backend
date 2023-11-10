@@ -42,7 +42,7 @@ class TaskDataHandler:
                 self.generation_configs.update(generation_configs)
 
             if prompt:
-                prompt_len = llm_dict[model_name].token_counter([{'role':'user', 'content':prompt}])
+                prompt_len = llm_dict[model_name]['model'].token_counter([{'role':'user', 'content':prompt}])
                 if prompt_len >= llm_prompt_max_len:
                     resp_code = 404
                     custom_configs = {}
